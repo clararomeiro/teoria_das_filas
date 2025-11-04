@@ -57,7 +57,7 @@ export class QueueingService {
         taxaDeBloqueio: 0,
         dadosDeEntrada: dto,
         observacao:
-          'O sistema é instável ($\rho ge 1$). A fila crescerá indefinidamente.',
+          'O sistema é instável (ρ ≥ 1). A fila crescerá indefinidamente.',
       };
     }
 

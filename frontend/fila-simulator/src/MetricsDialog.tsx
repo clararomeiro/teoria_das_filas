@@ -204,32 +204,7 @@ function MetricsDialog({ open, onClose, metrics }: MetricsDialogProps) {
                   </Typography>
                 );
               })}
-              <Typography
-                variant="body1"
-                sx={[styles.card, { gridColumn: "span 2" }]}
-              >
-                <Box component="span" sx={styles.title}>
-                  Dados de Entrada
-                </Box>
-                <Box 
-                  component="pre" 
-                  sx={{
-                    fontSize: "0.875rem",
-                    fontFamily: "monospace",
-                    color: "#1976d2",
-                    // backgroundColor: "rgba(25, 118, 210, 0.08)",
-                    padding: 2,
-                    borderRadius: 1,
-                    margin: 0,
-                    whiteSpace: "pre-wrap",
-                    wordBreak: "break-word",
-                    maxWidth: "100%",
-                    overflow: "auto"
-                  }}
-                >
-                  {JSON.stringify(metrics.dadosDeEntrada, null, 2)}
-                </Box>
-              </Typography>
+
             </Box>
 
             {/* Observação, se existir */}
