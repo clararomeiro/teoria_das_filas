@@ -7,36 +7,62 @@ export interface QueueParameters {
   servers: number;
   capacity?: number;
   initialCustomers?: number;
-  discipline: string;
+  discipline: 'FIFO' | 'LIFO';
 }
 
 interface QueueParametersAPI {
-  arrival_rate: number;
-  service_rate: number;
-  servers: number;
-  capacity?: number;
-  initial_customers?: number;
-  discipline: string;
+  taxaDeChegada: number;
+  taxaDeServico: number;
+  numeroDeServidores: number;
+  capacidadeMaximaSistema?: number;
+  numeroInicialDeClientes?: number;
+  disciplinaDeAtendimento: 'FIFO' | 'LIFO';
 }
 
-export interface QueueMetric {
-  metric: string;
-  value: number;
-  info?: string;
+export interface QueueInputData {
+  taxaDeChegada: number;
+  taxaDeServico: number;
+  numeroDeServidores: number;
+  disciplinaDeAtendimento: 'FIFO' | 'LIFO';
+  capacidadeMaximaSistema?: number;
+  numeroInicialDeClientes?: number;
 }
 
-const calculateMetrics = async (parameters: QueueParameters): Promise<QueueMetric[]> => {
-  // Converter para snake_case para a API
+export interface QueueMetricsResponse {
+  modelo: string;
+  utilizacaoSistema: number;
+  numeroMedioClientesSistema: number;
+  numeroMedioClientesFila: number;
+  tempoMedioSistema: number;
+  tempoMedioFila: number;
+  taxaDeSaida: number;
+  probabilidadeSistemaVazio: number;
+  probabilidadeDeEspera: number;
+  capacidadeMaxima?: number;
+  taxaDeBloqueio?: number;
+  dadosDeEntrada: QueueInputData;
+  observacao?: string;
+}
+
+const calculateMetrics = async (parameters: QueueParameters): Promise<QueueMetricsResponse> => {
+  // Converter para os nomes esperados pelo DTO do backend
   const apiParameters: QueueParametersAPI = {
-    arrival_rate: parameters.arrivalRate,
-    service_rate: parameters.serviceRate,
-    servers: parameters.servers,
-    capacity: parameters.capacity,
-    initial_customers: parameters.initialCustomers,
-    discipline: parameters.discipline,
+    taxaDeChegada: parameters.arrivalRate,
+    taxaDeServico: parameters.serviceRate,
+    numeroDeServidores: parameters.servers,
+    disciplinaDeAtendimento: parameters.discipline,
   };
 
-  const response = await api.post('/calculate-metrics', apiParameters);
+  // Adicionar parâmetros opcionais apenas se fornecidos
+  if (parameters.capacity !== undefined) {
+    apiParameters.capacidadeMaximaSistema = parameters.capacity;
+  }
+  
+  if (parameters.initialCustomers !== undefined) {
+    apiParameters.numeroInicialDeClientes = parameters.initialCustomers;
+  }
+
+  const response = await api.post('/queue/calculate', apiParameters);
   return response.data;
 };
 

@@ -14,7 +14,8 @@ import {
 } from "@mui/material";
 import { InfoOutlined } from "@mui/icons-material";
 import MetricsDialog from "./MetricsDialog";
-import { useMetricsMock as useMetrics, type QueueParameters, type QueueMetric } from "./useMetricsMock";
+import { useMetrics, type QueueMetricsResponse, type QueueParameters } from "./useMetrics";
+// import { useMetricsMock as useMetrics, type QueueParameters, type QueueMetric } from "./useMetricsMock";
 
 function App() {
   const [arrivalRate, setArrivalRate] = useState<string>("");
@@ -22,11 +23,22 @@ function App() {
   const [servers, setServers] = useState<string>("");
   const [capacity, setCapacity] = useState<string>("");
   const [initialCustomers, setInitialCustomers] = useState<string>("");
-  const [discipline, setDiscipline] = useState<string>("FIFO");
+  const [discipline, setDiscipline] = useState<'FIFO' | 'LIFO'>('FIFO');
   const [dialogOpen, setDialogOpen] = useState<boolean>(false);
-  const [metricsData, setMetricsData] = useState<QueueMetric[]>([]);
+  const [metricsData, setMetricsData] = useState<QueueMetricsResponse | null>(null);
 
   const { mutate: calculateMetrics, isPending, error } = useMetrics();
+
+  const getErrorMessage = (error: Error): string => {
+    // Verificar se é um erro do Axios com resposta da API
+    if ('response' in error && error.response && typeof error.response === 'object') {
+      const response = error.response as { data?: { message?: string } };
+      const message = response.data?.message || error.message || "Erro ao calcular métricas";
+      // Remover caracteres LaTeX das mensagens
+      return message.replace(/\$([^$]+)\$/g, '$1');
+    }
+    return error.message || "Erro ao calcular métricas";
+  };
 
   const handleSubmit = (e: React.MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
@@ -272,7 +284,7 @@ function App() {
           label="Disciplina de atendimento"
           variant="outlined"
           value={discipline}
-          onChange={(e) => setDiscipline(e.target.value)}
+          onChange={(e) => setDiscipline(e.target.value as 'FIFO' | 'LIFO')}
           disabled={isPending}
           InputProps={{
             endAdornment: (
@@ -298,8 +310,8 @@ function App() {
         >
           <MenuItem value="FIFO">FIFO (First In, First Out)</MenuItem>
           <MenuItem value="LIFO">LIFO (Last In, First Out)</MenuItem>
-          <MenuItem value="PRIORITY">Prioridades</MenuItem>
-          <MenuItem value="RANDOM">Aleatório</MenuItem>
+          {/* <MenuItem value="PRIORITY">Prioridades</MenuItem> */}
+          {/* <MenuItem value="RANDOM">Aleatório</MenuItem> */}
         </TextField>
 
         <Typography
@@ -318,7 +330,7 @@ function App() {
 
         {error && (
           <Alert severity="error" sx={{ gridColumn: "1 / -1", mb: 2 }}>
-            Erro ao calcular métricas: {error.message}
+            {getErrorMessage(error)}
           </Alert>
         )}
 
